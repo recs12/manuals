@@ -82,8 +82,8 @@ def export_view(mod, pt_num, path_to_views, username=ACRONYM, password=ACRONYM):
     time.sleep(3)
 
 def cmd_display(module_number, task):
-    time_now = dt.now().strftime('%H:%m:%S')
-    print(f"\n[\t{module_number}\t]:\t- {time_now} -\t- {task}")
+    time_now = dt.now().strftime('%H:%M:%S')
+    print(f"\n[\t{module_number}\t]:\t{time_now}\t {task}")
 
 def proceed_yes_or_no():
     "ask user to resume the program"
@@ -95,7 +95,7 @@ def proceed_yes_or_no():
 
 def introduction():
     """Header of the app"""
-    today = dt.now().strftime('%H:%m:%S')
+    today = dt.now().strftime('%H:%M:%S')
     intro = f"""
     Date: {today}
     user: {ACRONYM}
