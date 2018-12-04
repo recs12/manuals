@@ -104,7 +104,15 @@ def introduction():
 
 def password():
     """ request the user password. """
-    return getpass.getpass("Enter password :")    
+    return getpass.getpass("Enter password :") 
+
+def decorator(wrapped_function):
+    def _wrapper(*args, **kwargs):
+        # do something before the function call
+        result = wrapped_function(*args, **kwargs)
+        # do something after the function call
+        return result
+    return _wrapper   
 
 def main(excel_path, downloads_path):
     introduction()
