@@ -15,11 +15,13 @@ from pywinauto.findwindows import ElementAmbiguousError , WindowNotFoundError, E
 from datetime import datetime  as dt
 from pywinauto.application import Application
 from openpyxl import load_workbook
+from pathlib import Path
 
 #VARIABLES
 ACRONYM = os.environ.get('USERNAME')
 FOLDERPATH = os.getcwd()
-EXCELPATH = r'.\manuals.xlsx'
+# EXCELPATH = r'.\manuals.xlsx'
+EXCELPATH = sorted(Path('.').glob('*.xlsx'))[0].name
 
 def generate_from_excel(path):
     """generate list modules/part-numbers """
@@ -69,9 +71,9 @@ def export_view(mod, pt_num, path_to_views, username=ACRONYM, password=ACRONYM):
         app.PrincipalForm[u'4'].type_keys(path_to_views) #loop through the  modules files
         app.PrincipalForm[u'3'].type_keys("{DOWN}")
         app.PrincipalForm.Export.click_input()
-    #implementation of wait methods
+    app.wait_cpu_usage_lower(threshold=5) # wait until CPU usage is lower than 5%
     def detecting_pdf(): return any(glob.glob(os.path.join(path_to_views, r'*\*.pdf')))
-    wait_until(500 , 5.00 , detecting_pdf , True)
+    wait_until(1000 , 5.00 , detecting_pdf , True)
     cmd_display(mod, 'exported')
     #close the popup windows & app
     window = app.Dialog

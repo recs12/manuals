@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>excel.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>excel.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      <p>vu6.py - Download Manual views</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">getpass</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">progressbar</span>
+<span class="kn">import</span> <span class="nn">string</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">tabulate</span> <span class="kn">import</span> <span class="n">tabulate</span>
+<span class="kn">from</span> <span class="nn">pywinauto.timings</span> <span class="kn">import</span> <span class="n">wait_until</span>
+<span class="kn">from</span> <span class="nn">pywinauto</span> <span class="kn">import</span> <span class="n">findwindows</span>
+<span class="kn">from</span> <span class="nn">pywinauto.findwindows</span> <span class="kn">import</span> <span class="n">ElementAmbiguousError</span> <span class="p">,</span> <span class="n">WindowNotFoundError</span><span class="p">,</span> <span class="n">ElementNotFoundError</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>  <span class="k">as</span> <span class="n">dt</span>
+<span class="kn">from</span> <span class="nn">pywinauto.application</span> <span class="kn">import</span> <span class="n">Application</span>
+<span class="kn">from</span> <span class="nn">openpyxl</span> <span class="kn">import</span> <span class="n">load_workbook</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      <p>VARIABLES</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">ACRONYM</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;USERNAME&#39;</span><span class="p">)</span>
+<span class="n">FOLDERPATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      <p>EXCELPATH = r&rsquo;.\manuals.xlsx&rsquo;</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="n">EXCELPATH</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;*.xlsx&#39;</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">name</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      <p>generate list modules/part-numbers</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">generate_from_excel</span><span class="p">(</span><span class="n">path</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">manual_file_not_in_folder</span><span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;manuals.xlsx&quot;</span><span class="p">)</span><span class="o">==</span><span class="bp">False</span>
+    <span class="k">if</span> <span class="n">manual_file_not_in_folder</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">FileNotFoundError</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">wb</span> <span class="o">=</span> <span class="n">load_workbook</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">ws</span> <span class="o">=</span> <span class="n">wb</span><span class="p">[</span><span class="s1">&#39;Sheet1&#39;</span><span class="p">]</span>
+        <span class="n">maximum_rows</span> <span class="o">=</span> <span class="n">ws</span><span class="o">.</span><span class="n">max_row</span>
+        <span class="n">column_modules</span> <span class="o">=</span> <span class="p">[</span> <span class="n">ws</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maximum_rows</span><span class="p">)]</span>
+        <span class="n">column_partnumbers</span> <span class="o">=</span> <span class="p">[</span> <span class="n">ws</span><span class="o">.</span><span class="n">cell</span><span class="p">(</span><span class="n">row</span><span class="o">=</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">column</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">value</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">maximum_rows</span><span class="p">)]</span>
+        <span class="n">column_modules</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">column_modules</span><span class="p">))</span>
+        <span class="n">column_partnumbers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">column_partnumbers</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">column_modules</span><span class="p">,</span> <span class="n">column_partnumbers</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      <p>generate a formatted display of content in excel file</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">display_board</span><span class="p">(</span><span class="n">excel_data</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">is_data_dictionnary</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">excel_data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)</span><span class="o">==</span><span class="bp">False</span>
+
+    <span class="k">if</span> <span class="n">is_data_dictionnary</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;the value provided to method:display_board should be a dictionnary&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">modules</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">excel_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">partnumbers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">excel_data</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">({</span><span class="s2">&quot;Module&quot;</span><span class="p">:</span> <span class="n">modules</span><span class="p">,</span><span class="s2">&quot;Part number&quot;</span><span class="p">:</span> <span class="n">partnumbers</span> <span class="p">},</span> <span class="n">headers</span><span class="o">=</span><span class="s2">&quot;keys&quot;</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">export_view</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">pt_num</span><span class="p">,</span> <span class="n">path_to_views</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">ACRONYM</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">ACRONYM</span><span class="p">):</span>
+    <span class="n">cmd_display</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="s1">&#39;downloading...&#39;</span><span class="p">)</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">Application</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">cmd_line</span><span class="o">=</span><span class="sa">u</span><span class="s1">&#39;&quot;C:</span><span class="se">\\</span><span class="s1">Program Files (x86)</span><span class="se">\\</span><span class="s1">Solid Edge TC Manual View</span><span class="se">\\</span><span class="s1">Solid Edge TC Manual View.exe&quot;&#39;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">LoginForm</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="s1">&#39;ready&#39;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">LoginForm</span><span class="o">.</span><span class="n">Edit5</span><span class="o">.</span><span class="n">set_edit_text</span><span class="p">(</span><span class="n">username</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">LoginForm</span><span class="o">.</span><span class="n">Edit4</span><span class="o">.</span><span class="n">set_edit_text</span><span class="p">(</span><span class="n">password</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">LoginForm</span><span class="o">.</span><span class="n">Login</span><span class="o">.</span><span class="n">click_input</span><span class="p">()</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">PrincipalForm</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="s1">&#39;ready&#39;</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">PrincipalForm</span><span class="o">.</span><span class="n">Edit2</span><span class="o">.</span><span class="n">set_edit_text</span><span class="p">(</span><span class="n">pt_num</span><span class="p">)</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">PrincipalForm</span><span class="o">.</span><span class="n">Search</span><span class="o">.</span><span class="n">click_input</span><span class="p">()</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">findwindows</span><span class="o">.</span><span class="n">find_windows</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Search error&#39;</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Search Error: PT number invalide &#39;</span><span class="p">)</span>
+        <span class="n">window</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">Dialog</span>
+        <span class="n">window</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="s1">&#39;ready&#39;</span><span class="p">)</span>
+        <span class="n">window</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">PrincipalForm</span><span class="o">.</span><span class="n">type_keys</span><span class="p">(</span><span class="s1">&#39;%{F4}&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">PrincipalForm</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;4&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">type_keys</span><span class="p">(</span><span class="n">path_to_views</span><span class="p">)</span> <span class="c1">#loop through the  modules files</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">PrincipalForm</span><span class="p">[</span><span class="sa">u</span><span class="s1">&#39;3&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">type_keys</span><span class="p">(</span><span class="s2">&quot;{DOWN}&quot;</span><span class="p">)</span>
+        <span class="n">app</span><span class="o">.</span><span class="n">PrincipalForm</span><span class="o">.</span><span class="n">Export</span><span class="o">.</span><span class="n">click_input</span><span class="p">()</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">wait_cpu_usage_lower</span><span class="p">(</span><span class="n">threshold</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span> <span class="c1"># wait until CPU usage is lower than 5%</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">detecting_pdf</span><span class="p">():</span> <span class="k">return</span> <span class="nb">any</span><span class="p">(</span><span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path_to_views</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;*\*.pdf&#39;</span><span class="p">)))</span>
+    <span class="n">wait_until</span><span class="p">(</span><span class="mi">1000</span> <span class="p">,</span> <span class="mf">5.00</span> <span class="p">,</span> <span class="n">detecting_pdf</span> <span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">cmd_display</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="s1">&#39;exported&#39;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      <p>close the popup windows &amp; app</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">window</span> <span class="o">=</span> <span class="n">app</span><span class="o">.</span><span class="n">Dialog</span>
+    <span class="n">button</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">OK</span>
+    <span class="n">button</span><span class="o">.</span><span class="n">click_input</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      <p>close principal form</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">app</span><span class="o">.</span><span class="n">PrincipalForm</span><span class="o">.</span><span class="n">type_keys</span><span class="p">(</span><span class="s1">&#39;%{F4}&#39;</span><span class="p">)</span> <span class="c1"># close an active window with Alt+F4</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">cmd_display</span><span class="p">(</span><span class="n">module_number</span><span class="p">,</span> <span class="n">task</span><span class="p">):</span>
+    <span class="n">time_now</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H:%M:%S&#39;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[</span><span class="se">\t</span><span class="s2">{module_number}</span><span class="se">\t</span><span class="s2">]:</span><span class="se">\t</span><span class="s2">{time_now}</span><span class="se">\t</span><span class="s2"> {task}&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">proceed_yes_or_no</span><span class="p">():</span>
+    <span class="s2">&quot;ask user to resume the program&quot;</span>
+    <span class="n">answer</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Proceed ([y]/n) ?:  &quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">answer</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;yes&#39;</span><span class="p">,</span><span class="s1">&#39;y&#39;</span><span class="p">,</span><span class="s1">&#39;YES&#39;</span><span class="p">,</span><span class="s1">&#39;Y&#39;</span><span class="p">]:</span>
+        <span class="k">pass</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s2">&quot;Process has stopped.&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>Header of the app</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">introduction</span><span class="p">():</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="n">today</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s1">&#39;%H:%M:%S&#39;</span><span class="p">)</span>
+    <span class="n">intro</span> <span class="o">=</span> <span class="n">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    Date: {today}</span>
+<span class="s2">    user: {ACRONYM}</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">intro</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>request the user password.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">password</span><span class="p">():</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">return</span> <span class="n">getpass</span><span class="o">.</span><span class="n">getpass</span><span class="p">(</span><span class="s2">&quot;Enter password :&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">wrapped_function</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      <p>do something before the function call</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="n">result</span> <span class="o">=</span> <span class="n">wrapped_function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      <p>do something after the function call</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">return</span> <span class="n">result</span>
+    <span class="k">return</span> <span class="n">_wrapper</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-21'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-21'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">excel_path</span><span class="p">,</span> <span class="n">downloads_path</span><span class="p">):</span>
+    <span class="n">introduction</span><span class="p">()</span>
+    <span class="n">password_user</span> <span class="o">=</span> <span class="n">password</span><span class="p">()</span>
+    <span class="n">tableau</span> <span class="o">=</span> <span class="n">generate_from_excel</span><span class="p">(</span><span class="n">excel_path</span><span class="p">)</span>
+    <span class="n">display_board</span><span class="p">(</span><span class="n">tableau</span><span class="p">)</span>
+    <span class="n">proceed_yes_or_no</span><span class="p">()</span>
+    
+    <span class="n">bar</span> <span class="o">=</span> <span class="n">progressbar</span><span class="o">.</span><span class="n">ProgressBar</span><span class="p">(</span>
+        <span class="n">widgets</span><span class="o">=</span><span class="p">[</span><span class="n">progressbar</span><span class="o">.</span><span class="n">SimpleProgress</span><span class="p">()],</span>
+        <span class="n">max_value</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">tableau</span><span class="p">),</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="n">i</span><span class="o">=</span><span class="mi">0</span>
+    <span class="k">for</span> <span class="n">module</span><span class="p">,</span><span class="n">number</span> <span class="ow">in</span> <span class="n">tableau</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">export_view</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">module</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">number</span><span class="p">),</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">downloads_path</span><span class="p">,</span> <span class="n">module</span><span class="p">),</span> <span class="n">password</span><span class="o">=</span><span class="n">password_user</span><span class="p">)</span>  <span class="c1"># three variable mandatory</span>
+        <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+        <span class="n">bar</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="n">bar</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">EXCELPATH</span><span class="p">,</span><span class="n">FOLDERPATH</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-22'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-22'>#</a>
+      </div>
+      <p>variables review
+refactoring
+docstring
+review output display</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-23'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-23'>#</a>
+      </div>
+      <p>modification:
+ability to download one module with the affixe &ndash;unique or -U
+for this use a decorator for like @excel/export_view and @unique/export_view
+upload as package
+add a *(stars) column to rerun the macro only for certain module </p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>
