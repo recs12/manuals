@@ -5,13 +5,11 @@ import glob
 import getpass
 import os
 import progressbar
-import string
 import sys
 import time
 from tabulate import tabulate
 from pywinauto.timings import wait_until
 from pywinauto import findwindows
-from pywinauto.findwindows import ElementAmbiguousError , WindowNotFoundError, ElementNotFoundError
 from datetime import datetime  as dt
 from pywinauto.application import Application
 from openpyxl import load_workbook
@@ -25,30 +23,30 @@ EXCELPATH = sorted(Path('.').glob('*.xlsx'))[0].name
 
 def generate_from_excel(path):
     """generate list modules/part-numbers """
-    manual_file_not_in_folder= os.path.exists("manuals.xlsx")==False
+    manual_file_not_in_folder= os.path.exists("manuals.xlsx") is not True
     if manual_file_not_in_folder:
         raise FileNotFoundError
     else:
         wb = load_workbook(path)
         ws = wb['Sheet1']
         maximum_rows = ws.max_row
-        column_modules = [ ws.cell(row=i+1,column=1).value for i in range(maximum_rows)]
-        column_partnumbers = [ ws.cell(row=j+1,column=2).value for j in range(maximum_rows)]
+        column_modules = [ws.cell(row=i+1, column=1).value for i in range(maximum_rows)]
+        column_partnumbers = [ws.cell(row=j+1, column=2).value for j in range(maximum_rows)]
         column_modules = list(filter(None, column_modules))
         column_partnumbers = list(filter(None, column_partnumbers))
         return dict(zip(column_modules, column_partnumbers))
 
 def display_board(excel_data):
     """generate a formatted display of content in excel file """
-    is_data_dictionnary = isinstance(excel_data, dict)==False
+    is_data_dictionnary = isinstance(excel_data, dict) is not True
 
     if is_data_dictionnary:
         raise TypeError("the value provided to method:display_board should be a dictionnary")
     else:
         modules = list(excel_data.keys())
         partnumbers = list(excel_data.values())
-        print(tabulate({"Module": modules,"Part number": partnumbers }, headers="keys"))
-    
+        print(tabulate({"Module": modules, "Part number": partnumbers }, headers="keys"))
+
 def export_view(mod, pt_num, path_to_views, username=ACRONYM, password=ACRONYM):
     cmd_display(mod, 'downloading...')
     app = Application().start(cmd_line=u'"C:\\Program Files (x86)\\Solid Edge TC Manual View\\Solid Edge TC Manual View.exe"')
@@ -73,7 +71,7 @@ def export_view(mod, pt_num, path_to_views, username=ACRONYM, password=ACRONYM):
         app.PrincipalForm.Export.click_input()
     app.wait_cpu_usage_lower(threshold=5) # wait until CPU usage is lower than 5%
     def detecting_pdf(): return any(glob.glob(os.path.join(path_to_views, r'*\*.pdf')))
-    wait_until(1000 , 5.00 , detecting_pdf , True)
+    wait_until(1000, 5.00, detecting_pdf, True)
     cmd_display(mod, 'exported')
     #close the popup windows & app
     window = app.Dialog
@@ -106,7 +104,7 @@ def introduction():
 
 def password():
     """ request the user password. """
-    return getpass.getpass("Enter password :") 
+    return getpass.getpass("Enter password :")
 
 def decorator(wrapped_function):
     def _wrapper(*args, **kwargs):
@@ -114,7 +112,7 @@ def decorator(wrapped_function):
         result = wrapped_function(*args, **kwargs)
         # do something after the function call
         return result
-    return _wrapper   
+    return _wrapper
 
 def main(excel_path, downloads_path):
     introduction()
@@ -122,29 +120,8 @@ def main(excel_path, downloads_path):
     tableau = generate_from_excel(excel_path)
     display_board(tableau)
     proceed_yes_or_no()
-    
-    bar = progressbar.ProgressBar(
-        widgets=[progressbar.SimpleProgress()],
-        max_value=len(tableau),
-    ).start()
-
-    i=0
     for module,number in tableau.items():
         export_view(str(module), str(number), os.path.join(downloads_path, module), password=password_user)  # three variable mandatory
-        i+=1
-        bar.update(i)
-    bar.finish()
 
 if __name__ == '__main__':
-    main(EXCELPATH,FOLDERPATH)
-
-#variables review
-#refactoring
-#docstring
-#review output display
-
-#modification:
- #ability to download one module with the affixe --unique or -U
- #for this use a decorator for like @excel/export_view and @unique/export_view
- #upload as package
- #add a *(stars) column to rerun the macro only for certain module 
+    main(EXCELPATH, FOLDERPATH)
